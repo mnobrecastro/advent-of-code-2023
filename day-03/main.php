@@ -86,13 +86,91 @@ function solve(string $filename) : int
                         }
                     }
                 }
-                $numbers_prev = array();
-                $numbers_prev = $numbers;
             }            
-            $symbols_prev = $symbols;
-        } else {
-            $symbols_prev = array();
         }
+        $symbols_prev = $symbols;
+        $numbers_prev = $numbers;
+    }
+    return $sum;
+}
+
+function solve2(string $filename) : int
+{
+    $sum = 0;
+    $generator = gen_line($filename);
+    $numbers_prev = array();
+    $symbols_prev = array();
+    $pairs = array();
+    foreach($generator as $line) {
+        [$numbers, $symbols] = parse_line($line);
+        if ($symbols_prev) {
+            // Associate $symbols_prev to $numbers
+            if ($numbers) {                
+                foreach($symbols_prev as $symbol) {
+                    if($symbol[0] == "*") {
+                        foreach($numbers as $number) {
+                            //echo $number[0], ",", $symbol[0], "\n";
+                            if (is_match($number, $symbol)) { 
+                                //echo $number[0], " > ", $symbol[0], "\n";                               
+                                if ( isset($pairs[$symbol[1]]) ) {
+                                    // Confirm the pairing
+                                    $sum += $pairs[$symbol[1]] * intval($number[0]);
+                                    echo $pairs[$symbol[1]], " * ", intval($number[0]), "\n";
+                                    unset($pairs[$symbol[1]]);
+                                } else {
+                                    $pairs[$symbol[1]] = intval($number[0]);
+                                }
+                                unset($number);
+                            }
+                        }
+                        unset($pairs[$symbol[1]]);
+                    }
+                }
+            }
+        }
+        if ($symbols) {
+            // Associate $symbols to $numbers_prev (previous line)
+            if ($numbers_prev) {
+                foreach($symbols as $symbol) {        
+                    foreach($numbers_prev as $number) {
+                        //echo $number[0], ",", $symbol[0], "\n";
+                        if (is_match($number, $symbol) && $symbol[0] == "*") {
+                            //echo $number[0], " > ", $symbol[0], "\n";
+                            if ( isset($pairs[$symbol[1]]) ) {
+                                // Confirm the pairing
+                                $sum += $pairs[$symbol[1]] * intval($number[0]);
+                                echo $pairs[$symbol[1]], " * ", intval($number[0]), "\n";
+                                unset($pairs[$symbol[1]]);
+                            } else {
+                                $pairs[$symbol[1]] = intval($number[0]);
+                            }
+                            unset($number);
+                        }
+                    }
+                }
+            }
+            // Associate $symbols to $numbers (same line)
+            if ($numbers) {             
+                foreach($symbols as $symbol) {
+                    foreach($numbers as $number) {
+                        //echo $number[0], ",", $symbol[0], "\n";
+                        if (is_match($number, $symbol) && $symbol[0] == "*") {
+                            //echo $number[0], " > ", $symbol[0], "\n";
+                            if ( isset($pairs[$symbol[1]]) ) {
+                                // Confirm the pairing
+                                $sum += $pairs[$symbol[1]] * intval($number[0]);
+                                echo $pairs[$symbol[1]], " * ", intval($number[0]), "\n";
+                                unset($pairs[$symbol[1]]);
+                            } else {
+                                $pairs[$symbol[1]] = intval($number[0]);
+                            }
+                            unset($number);
+                        }
+                    }
+                }
+            }            
+        }
+        $symbols_prev = $symbols;
         $numbers_prev = $numbers;
     }
     return $sum;
@@ -110,13 +188,19 @@ function main(): void
 
     /**** PART 1 ****/
     $res = solve("sample.txt");
-    echo $res;
+    echo $res, "\n";
     if (4361 !== $res)
         return;    
     $res = solve("input.txt");
     echo $res, "\n";
     
     // /**** PART 2 ****/
+    $res = solve2("sample.txt");
+    echo $res, "\n";
+    if (467835 !== $res)
+        return;    
+    $res = solve2("input.txt");
+    echo $res, "\n";
 
 }
 main();
