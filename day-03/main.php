@@ -50,7 +50,6 @@ function solve(string $filename) : int
             if ($numbers) {                
                 foreach($symbols_prev as $symbol) {
                     foreach($numbers as $number) {
-                        //echo $number[0], ",", $symbol[0], "\n";
                         if (is_match($number, $symbol)) {
                             echo $number[0], " > ", $symbol[0], "\n";
                             $sum += intval($number[0]);
@@ -65,7 +64,6 @@ function solve(string $filename) : int
             if ($numbers_prev) {
                 foreach($symbols as $symbol) {        
                     foreach($numbers_prev as $number) {
-                        //echo $number[0], ",", $symbol[0], "\n";
                         if (is_match($number, $symbol)) {
                             echo $number[0], " > ", $symbol[0], "\n";
                             $sum += intval($number[0]);
@@ -78,7 +76,6 @@ function solve(string $filename) : int
             if ($numbers) {             
                 foreach($symbols as $symbol) {
                     foreach($numbers as $number) {
-                        //echo $number[0], ",", $symbol[0], "\n";
                         if (is_match($number, $symbol)) {
                             echo $number[0], " > ", $symbol[0], "\n";
                             $sum += intval($number[0]);
@@ -109,9 +106,7 @@ function solve2(string $filename) : int
                 foreach($symbols_prev as $symbol) {
                     if($symbol[0] == "*") {
                         foreach($numbers as $number) {
-                            //echo $number[0], ",", $symbol[0], "\n";
-                            if (is_match($number, $symbol)) { 
-                                //echo $number[0], " > ", $symbol[0], "\n";                               
+                            if (is_match($number, $symbol)) {                            
                                 if ( isset($pairs[$symbol[1]]) ) {
                                     // Confirm the pairing
                                     $sum += $pairs[$symbol[1]] * intval($number[0]);
@@ -133,9 +128,7 @@ function solve2(string $filename) : int
             if ($numbers_prev) {
                 foreach($symbols as $symbol) {        
                     foreach($numbers_prev as $number) {
-                        //echo $number[0], ",", $symbol[0], "\n";
                         if (is_match($number, $symbol) && $symbol[0] == "*") {
-                            //echo $number[0], " > ", $symbol[0], "\n";
                             if ( isset($pairs[$symbol[1]]) ) {
                                 // Confirm the pairing
                                 $sum += $pairs[$symbol[1]] * intval($number[0]);
@@ -153,9 +146,7 @@ function solve2(string $filename) : int
             if ($numbers) {             
                 foreach($symbols as $symbol) {
                     foreach($numbers as $number) {
-                        //echo $number[0], ",", $symbol[0], "\n";
                         if (is_match($number, $symbol) && $symbol[0] == "*") {
-                            //echo $number[0], " > ", $symbol[0], "\n";
                             if ( isset($pairs[$symbol[1]]) ) {
                                 // Confirm the pairing
                                 $sum += $pairs[$symbol[1]] * intval($number[0]);
