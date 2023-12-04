@@ -49,23 +49,51 @@ function solve(string $filename) : int
     return $sum;
 }
 
+function find_matches($target, $source)
+{
+    $matches = 0;
+    $numbers = array();
+    sort($target);
+    sort($source);
+    $i = 0;
+    $j = 0;
+    while(true) {
+        if ($target[$i] == $source[$j]) {
+            array_push($numbers, $target[$i]);
+            $matches += 1;
+        }
+        if (($i == count($target)-1 && $j == count($source)-1))
+            break;
+        if ($target[$i] <= $source[$j]){
+            if ($i < count($target)-1)
+                $i += 1;
+            else if ($j < count($source)-1)
+                $j += 1;
+        } else {
+            if ($j < count($source)-1)
+                $j += 1;
+            else if ($i < count($target)-1)
+                $i += 1;
+        }
+    }
+    return [$matches, $numbers];
+}
+
+
 function solve2(string $filename, int $max_winning) : int
 {
     $sum = 0;
     $generator = gen_line($filename);
-    $copies = array_fill(0, $max_winning+1, 1);
+    $copies = array_fill(0, $max_winning+1, 1); // queue
     foreach($generator as $line) {        
         for($c = 0; $c < $copies[0]; $c++) {
             [$card, $target, $source] = parse_line($line);
             if ($c == 0)
                 echo "Card {$card[0]}: ";
-            $matches = 0;
-            foreach($source as $number) {
-                if(array_search($number, $target) !== false){
-                    $matches += 1;
-                    if ($c == 0)
-                        echo "$number ";
-                }
+            [$matches, $numbers] = find_matches($target, $source);
+            if ($c == 0) {
+                foreach($numbers as $number)
+                    echo "$number ";
             }
             if ($matches) {
                 for($i=1; $i <= $matches; $i++){
@@ -75,11 +103,9 @@ function solve2(string $filename, int $max_winning) : int
         }
         echo "({$copies[0]} copies). \n";
         $sum += $copies[0];
-        // Update de $copies buffer
-        for($i=0; $i < count($copies)-1; $i++){
-            $copies[$i] = $copies[$i+1];
-        }
-        $copies[count($copies)-1] = 1;
+        // Update de $copies queue
+        array_shift($copies); // dequeue
+        array_push($copies, 1); // enqueue
     }
     return $sum;
 }
