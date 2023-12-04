@@ -49,6 +49,41 @@ function solve(string $filename) : int
     return $sum;
 }
 
+function solve2(string $filename, int $max_winning) : int
+{
+    $sum = 0;
+    $generator = gen_line($filename);
+    $copies = array_fill(0, $max_winning+1, 1);
+    foreach($generator as $line) {        
+        for($c = 0; $c < $copies[0]; $c++) {
+            [$card, $target, $source] = parse_line($line);
+            if ($c == 0)
+                echo "Card {$card[0]}: ";
+            $matches = 0;
+            foreach($source as $number) {
+                if(array_search($number, $target) !== false){
+                    $matches += 1;
+                    if ($c == 0)
+                        echo "$number ";
+                }
+            }
+            if ($matches) {
+                for($i=1; $i <= $matches; $i++){
+                    $copies[$i] += 1;
+                }
+            }
+        }
+        echo "({$copies[0]} copies). \n";
+        $sum += $copies[0];
+        // Update de $copies buffer
+        for($i=0; $i < count($copies)-1; $i++){
+            $copies[$i] = $copies[$i+1];
+        }
+        $copies[count($copies)-1] = 1;
+    }
+    return $sum;
+}
+
 
 function main(): void
 {
@@ -58,6 +93,14 @@ function main(): void
     if (13 !== $res)
         return;    
     $res = solve("input.txt");
+    echo $res, "\n";
+    
+    /**** PART 2 ****/
+    $res = solve2("sample.txt", $max_winning=5);
+    echo $res, "\n";
+    if (30 !== $res)
+        return;
+    $res = solve2("input.txt", $max_winning=10);
     echo $res, "\n";
 }
 main();
