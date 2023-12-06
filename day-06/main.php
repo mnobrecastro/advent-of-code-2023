@@ -44,8 +44,6 @@ function parse_file($filename)
 function solve(string $filename) : int
 {
     [$time, $dist] = parse_file($filename);
-    //print_arr($time);
-    //print_arr($dist);    
     $mul = 1;
     for($i = 0; $i < count($time); $i++) {
         $ways = 0;
@@ -60,26 +58,11 @@ function solve(string $filename) : int
     return $mul;
 }
 
-function parse_file2($filename)
-{
-    $generator = gen_line($filename);
-    $time = parse_line($generator->current());
-    $generator->next();
-    $dist = parse_line($generator->current());
-    $generator->next();
-    // Convert the numbers and return array
-    $t = implode("", $time);
-    $d = implode("", $dist);
-    return [array(intval($t)), array(intval($d))];
-}
-
 function solve2(string $filename) : int
 {
-    [$time, $dist] = parse_file2($filename);
+    [$time, $dist] = parse_file($filename);
     $time = array(intval(implode("", $time)));
     $dist = array(intval(implode("", $dist)));
-    //print_arr($time);
-    //print_arr($dist);
     $mul = 1;
     for($i = 0; $i < count($time); $i++) {
         $ways = 0;
@@ -97,13 +80,13 @@ function solve2(string $filename) : int
 
 function main(): void
 {
-    // /**** PART 1 ****/
-    // $res = solve("sample.txt");
-    // echo $res, "\n";
-    // if (288 !== $res)
-    //     return;    
-    // $res = solve("input.txt");
-    // echo $res, "\n";
+    /**** PART 1 ****/
+    $res = solve("sample.txt");
+    echo $res, "\n";
+    if (288 !== $res)
+        return;    
+    $res = solve("input.txt");
+    echo $res, "\n";
 
     /**** PART 2 ****/
     $res = solve2("sample.txt");
