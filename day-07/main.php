@@ -58,6 +58,20 @@ function rank($a, $b)
     return 0;
 }
 
+function apply_joker(array &$arr) : void{
+    if (($idx = array_search("J", array_keys($arr))) !== false){
+        //echo "a $idx\n";
+        if(count($arr) > 1) {
+            if($idx == 0 && count($arr) > 1) {
+                $arr[array_keys($arr)[1]] += $arr["J"];            
+            } else {
+                $arr[array_keys($arr)[0]] += $arr["J"];
+            }          
+            unset($arr["J"]);
+        }        
+    }
+}
+
 function rank2($a, $b)
 {
     $ca = $a[0];
@@ -70,27 +84,9 @@ function rank2($a, $b)
     
     // Handle Joker "J" as wildcard
     $aj = $ar;
-    if (($idx = array_search("J", array_keys($aj))) !== false){
-        if(array_keys($aj) != 5){
-            if($idx == 0) {
-                $aj[array_keys($aj)[1]] += $aj["J"];
-            } else {
-                $aj[array_keys($aj)[0]] += $aj["J"];
-            }
-        }
-        unset($aj["J"]);
-    }
+    apply_joker($aj);
     $bj = $br;
-    if (($idx = array_search("J", array_keys($bj))) !== false){
-        if(array_keys($bj) != 5){
-            if($idx == 0) {
-                $bj[array_keys($bj)[1]] += $bj["J"];
-            } else {
-                $bj[array_keys($bj)[0]] += $bj["J"];
-            }
-        }
-        unset($bj["J"]);
-    }
+    apply_joker($bj);
 
     // Check for different type of hand
     if(count($aj) != count($bj))
@@ -130,7 +126,7 @@ function solve(string $filename, string $rank_fn) : int
     $sum = 0;
     for($i = 0; $i < count($hands); $i++){
         $sum += $hands[$i][1] * ($i+1);
-        print_arr($hands[$i][0]);
+        //print_arr($hands[$i][0]);
     }
     return $sum;
 }
