@@ -46,6 +46,7 @@ function rank($a, $b)
         if($ka != $kb)
             return $ka - $kb;
     }
+
     // Check for first card
     $camel = array("2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A");
     for ($i = 0; $i < count($ca); $i++){
@@ -57,7 +58,64 @@ function rank($a, $b)
     return 0;
 }
 
-function solve(string $filename) : int
+function rank2($a, $b)
+{
+    $ca = $a[0];
+    $cb = $b[0];
+    // Sort cards by number of occurences
+    $ar = array_count_values($ca);
+    arsort($ar);
+    $br = array_count_values($cb);    
+    arsort($br);
+    
+    // Handle Joker "J" as wildcard
+    $aj = $ar;
+    if (($idx = array_search("J", array_keys($aj))) !== false){
+        if(array_keys($aj) != 5){
+            if($idx == 0) {
+                $aj[array_keys($aj)[1]] += $aj["J"];
+            } else {
+                $aj[array_keys($aj)[0]] += $aj["J"];
+            }
+        }
+        unset($aj["J"]);
+    }
+    $bj = $br;
+    if (($idx = array_search("J", array_keys($bj))) !== false){
+        if(array_keys($bj) != 5){
+            if($idx == 0) {
+                $bj[array_keys($bj)[1]] += $bj["J"];
+            } else {
+                $bj[array_keys($bj)[0]] += $bj["J"];
+            }
+        }
+        unset($bj["J"]);
+    }
+
+    // Check for different type of hand
+    if(count($aj) != count($bj))
+        return -(count($aj) - count($bj));
+
+    // Check for similar type of hand
+    for ($i = 0; $i < count($aj); $i++) {
+        $ka = $aj[array_keys($aj)[$i]];
+        $kb = $bj[array_keys($bj)[$i]];
+        if($ka != $kb)
+            return $ka - $kb;
+    }
+
+    // Check for first card
+    $camel = array("J", "2", "3", "4", "5", "6", "7", "8", "9", "T", "Q", "K", "A");
+    for ($i = 0; $i < count($ca); $i++){
+        $va = array_search($ca[$i], $camel);
+        $vb = array_search($cb[$i], $camel);
+        if($va != $vb)
+            return $va - $vb;
+    }
+    return 0;
+}
+
+function solve(string $filename, string $rank_fn) : int
 {
     $generator = gen_line($filename);
     $hands = array();
@@ -67,29 +125,40 @@ function solve(string $filename) : int
         $bet = intval($bet);
         $hands[] = array($cards, $bet);
     }
-    usort($hands, "rank");
+    usort($hands, $rank_fn);
 
     $sum = 0;
     for($i = 0; $i < count($hands); $i++){
         $sum += $hands[$i][1] * ($i+1);
-        //print_arr($hands[$i][0]);
+        print_arr($hands[$i][0]);
     }
-
     return $sum;
 }
 
 function main(): void
 {   
     /**** PART 1 ****/       
-    $res = solve("sample.txt");
-    echo "$res\n";
+    $res = solve("sample.txt", "rank");
+    echo $res;    
     if (6440 !== $res)
         return;
+    printf("... sample passed!\n");
     $tic = microtime(true); 
-    $res = solve("input.txt");
+    $res = solve("input.txt", "rank");
     $toc = microtime(true);
-    printf("Answer 1: %d in %.3f s.\n", $res, $toc-$tic);
-    //echo "Answer1: $res in $t s.\n";
+    printf("Answer 1: %d in %.3f ms.\n", $res, ($toc-$tic)*1e3);
+
+    /**** PART 2 ****/       
+    $res = solve("sample.txt", "rank2");
+    echo $res;
+    if (5905 !== $res)
+        return;
+    printf("... sample passed!\n");
+    $tic = microtime(true); 
+    $res = solve("input.txt", "rank2");
+    $toc = microtime(true);
+    printf("Answer 2: %d in %.3f ms.\n", $res, ($toc-$tic)*1e3);
+
 }
 main();
 
