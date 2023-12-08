@@ -20,7 +20,7 @@ function print_arr($arr)
 
 function find_letters(string $str) : array
 {
-    preg_match_all("/[A-Z]+/", $str, $matches);
+    preg_match_all("/[0-9A-Z]+/", $str, $matches);
     return $matches[0];
 }
 
@@ -66,19 +66,77 @@ function solve(string $filename) : int
     return $moves;
 }
 
+
+function gcd($a, $b)
+{
+    if ($b == 0)
+        return $a;
+    return gcd($b, $a % $b);
+}
+
+function least_common_multiple(array $arr) : int
+{
+    $ans = $arr[0];
+    for ($i = 1; $i < count($arr); $i++)
+        $ans = ((($arr[$i] * $ans)) / (gcd($arr[$i], $ans)));
+    return $ans;
+}
+
+function solve2(string $filename) : int
+{
+    [$instructions, $adj] = parse_file($filename);
+    $sources = array_keys($adj);
+    for($s = count($sources)-1; $s >= 0; $s--) {
+        if($sources[$s][2] != "A"){
+            unset($sources[$s]);       
+        }
+    }
+    $sources = array_values($sources);
+    //print_r($sources);
+    $dists = array_fill(0, count($sources), 0);
+    for($s = 0; $s < count($sources); $s++) {
+        $node = $sources[$s];
+        $moves = 0;
+        $i = 0;
+        while($node[2] !== "Z") {
+            if($instructions[$i] === "L")
+                $node = $adj[$node][0];
+            else
+                $node = $adj[$node][1];
+            $i++;
+            $moves++;
+            if ($i == strlen($instructions))
+                $i = 0;
+        }
+        $dists[$s] = $moves;
+    }
+    $dists = array_unique($dists);
+    return least_common_multiple($dists);
+}
+
 function main(): void
 {   
     /**** PART 1 ****/       
-    $res = solve("sample2.txt");
+    // $res = solve("sample2.txt");
+    // echo $res;    
+    // if (6 !== $res)
+    //     return;
+    // printf("... sample passed!\n");
+    // $tic = microtime(true); 
+    // $res = solve("input.txt");
+    // $toc = microtime(true);
+    // printf("Answer 1: %d in %.3f ms.\n", $res, ($toc-$tic)*1e3);
+
+    /**** PART 2 ****/       
+    $res = solve2("sample3.txt");
     echo $res;    
     if (6 !== $res)
         return;
     printf("... sample passed!\n");
     $tic = microtime(true); 
-    $res = solve("input.txt");
+    $res = solve2("input.txt");
     $toc = microtime(true);
-    printf("Answer 1: %d in %.3f ms.\n", $res, ($toc-$tic)*1e3);
-
+    printf("Answer 2: %d in %.3f ms.\n", $res, ($toc-$tic)*1e3);
 }
 main();
 
