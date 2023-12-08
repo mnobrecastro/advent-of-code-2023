@@ -49,7 +49,7 @@ function parse_file($filename) : array
 function solve(string $filename) : int
 {
     [$instructions, $adj] = parse_file($filename);
-    print_r($adj);
+    //print_r($adj);
     $node = "AAA";
     $moves = 0;
     $i = 0;
@@ -65,7 +65,6 @@ function solve(string $filename) : int
     }
     return $moves;
 }
-
 
 function gcd($a, $b)
 {
@@ -117,15 +116,15 @@ function solve2(string $filename) : int
 function main(): void
 {   
     /**** PART 1 ****/       
-    // $res = solve("sample2.txt");
-    // echo $res;    
-    // if (6 !== $res)
-    //     return;
-    // printf("... sample passed!\n");
-    // $tic = microtime(true); 
-    // $res = solve("input.txt");
-    // $toc = microtime(true);
-    // printf("Answer 1: %d in %.3f ms.\n", $res, ($toc-$tic)*1e3);
+    $res = solve("sample2.txt");
+    echo $res;    
+    if (6 !== $res)
+        return;
+    printf("... sample passed!\n");
+    $tic = microtime(true); 
+    $res = solve("input.txt");
+    $toc = microtime(true);
+    printf("Answer 1: %d in %.3f ms.\n", $res, ($toc-$tic)*1e3);
 
     /**** PART 2 ****/       
     $res = solve2("sample3.txt");
