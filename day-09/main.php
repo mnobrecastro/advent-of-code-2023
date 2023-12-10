@@ -36,7 +36,6 @@ function predict(array $num_arr, bool $first) : int
 {
     $pyramid = array();
     array_push($pyramid, $num_arr);
-    print_arr(end($pyramid));
     // Compute differences
     $flag = false;
     while(!$flag) {
@@ -45,21 +44,17 @@ function predict(array $num_arr, bool $first) : int
             $diff_arr[$i] = end($pyramid)[$i+1] - end($pyramid)[$i];
         }
         array_push($pyramid, $diff_arr);
-        print_arr($diff_arr);
         $unique_arr = array_unique($diff_arr);
         if(count($unique_arr) == 1 && $unique_arr[0] == 0)
             $flag = true;
     }
     // Compute prediction
-    print_arr(end($pyramid));    
     for($i = count($pyramid) - 2; $i >= 0; $i--){
         if(!$first)
             array_push($pyramid[$i], end($pyramid[$i]) + end($pyramid[$i+1]));
         else
-            array_unshift($pyramid[$i], $pyramid[$i][0] - $pyramid[$i+1][0]);
-        print_arr($pyramid[$i]);            
+            array_unshift($pyramid[$i], $pyramid[$i][0] - $pyramid[$i+1][0]);          
     }
-    echo "*\n";
     if(!$first)
         return end($pyramid[0]);
     else
