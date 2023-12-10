@@ -32,13 +32,13 @@ function parse_line(string $str) : array
     return $num_arr;
 }
 
-function predict(array $num_arr) : int 
+function predict(array $num_arr, bool $first) : int 
 {
     $pyramid = array();
     array_push($pyramid, $num_arr);
     print_arr(end($pyramid));
     // Compute differences
-    $flag = false;    
+    $flag = false;
     while(!$flag) {
         $diff_arr = array_fill(0, count(end($pyramid))-1, 0);
         for($i = 0; $i < count($diff_arr); $i++) {
@@ -49,32 +49,30 @@ function predict(array $num_arr) : int
         $unique_arr = array_unique($diff_arr);
         if(count($unique_arr) == 1 && $unique_arr[0] == 0)
             $flag = true;
-        // else if(count($diff_arr) == 1) {
-        //     print_arr(array(0));
-        //     array_push($pyramid, array(0));
-        //     $flag = true;
-        // }
-
     }
     // Compute prediction
-    // if(count(end($pyramid)) != 1)
-    //     array_push($pyramid[count($pyramid)-1], 0);
-    print_arr(end($pyramid));
+    print_arr(end($pyramid));    
     for($i = count($pyramid) - 2; $i >= 0; $i--){
-        array_push($pyramid[$i], end($pyramid[$i]) + end($pyramid[$i+1]));
-        print_arr($pyramid[$i]);
+        if(!$first)
+            array_push($pyramid[$i], end($pyramid[$i]) + end($pyramid[$i+1]));
+        else
+            array_unshift($pyramid[$i], $pyramid[$i][0] - $pyramid[$i+1][0]);
+        print_arr($pyramid[$i]);            
     }
     echo "*\n";
-    return end($pyramid[0]);
+    if(!$first)
+        return end($pyramid[0]);
+    else
+        return $pyramid[0][0];
 }
 
-function solve(string $filename) : int
+function solve(string $filename, bool $first=false) : int
 {
     $sum = 0;
     $generator = gen_line($filename);
     while ($generator->valid()) {
         $num_arr = parse_line($generator->current());
-        $val = predict($num_arr);
+        $val = predict($num_arr, $first);
         $sum += $val;
         $generator->next();
     }
@@ -92,6 +90,17 @@ function main(): void
     printf("... sample passed!\n");
     $tic = microtime(true); 
     $res = solve("input.txt");
+    $toc = microtime(true);
+    printf("Answer 1: %d in %.3f ms.\n", $res, ($toc-$tic)*1e3);
+
+    /**** PART 2 ****/       
+    $res = solve("sample.txt", $first=true);
+    echo $res;    
+    if (2 !== $res)
+        return;
+    printf("... sample passed!\n");
+    $tic = microtime(true); 
+    $res = solve("input.txt", $first=true);
     $toc = microtime(true);
     printf("Answer 1: %d in %.3f ms.\n", $res, ($toc-$tic)*1e3);
 }
