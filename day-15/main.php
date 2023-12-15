@@ -23,21 +23,6 @@ function parse_file($filename) : array
     return $mat;
 }
 
-function print_arr($arr)
-{
-    foreach($arr as $a){
-        echo $a, " ";
-    }
-    echo "\n";
-}
-
-function print_mat($mat)
-{
-    foreach($mat as $m){
-        print_arr($m);
-    }    
-}
-
 function apply_hash(string $str) : int
 {
     $val = 0;
@@ -66,11 +51,11 @@ function solve2(string $filename) : int
     foreach($mat[0] as $str) {
         if($pos = strpos($str, "=") !== false){
             [$label, $focal] = explode("=", $str);            
-            echo $label." ".$focal."\n";
+            //echo $label." ".$focal."\n";
             $boxes[apply_hash($label)][$label] = intval($focal);            
         } else {
             $label = substr($str, 0, -1);
-            echo $label."-\n";
+            //echo $label."-\n";
             if(in_array($label, array_keys($boxes[apply_hash($label)]))){
                 unset($boxes[apply_hash($label)][$label]);
             }
