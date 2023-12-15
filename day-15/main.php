@@ -58,6 +58,38 @@ function solve(string $filename) : int
     return $sum;
 }
 
+function solve2(string $filename) : int
+{
+    $boxes = array_fill(0, 256, array());
+    $mat = parse_file($filename);
+    // Add the lenses
+    foreach($mat[0] as $str) {
+        if($pos = strpos($str, "=") !== false){
+            [$label, $focal] = explode("=", $str);            
+            echo $label." ".$focal."\n";
+            $boxes[apply_hash($label)][$label] = intval($focal);            
+        } else {
+            $label = substr($str, 0, -1);
+            echo $label."-\n";
+            if(in_array($label, array_keys($boxes[apply_hash($label)]))){
+                unset($boxes[apply_hash($label)][$label]);
+            }
+        }
+    }
+    // Compute focusing power
+    $sum = 0;
+    for($i = 0; $i < count($boxes); $i++) {
+        if(count($boxes[$i]) >= 0) {
+            $j = 0;
+            foreach($boxes[$i] as $lens){
+                $sum += ($i + 1) * ($j+1) * $lens;;
+                $j++;
+            }
+        }
+    }
+    return $sum;
+}
+
 
 function main(): void
 {   
@@ -74,6 +106,17 @@ function main(): void
     $res = solve("input.txt");
     $toc = microtime(true);
     printf("Answer 1: %d in %.3f ms.\n", $res, ($toc-$tic)*1e3);
+
+    /**** PART 2 ****/       
+    $res = solve2("sample.txt");
+    echo $res;
+    if (145 !== $res)
+        return;
+    printf("... sample passed!\n");
+    $tic = microtime(true);
+    $res = solve2("input.txt");
+    $toc = microtime(true);
+    printf("Answer 2: %d in %.3f ms.\n", $res, ($toc-$tic)*1e3);
 }
 main();
 
