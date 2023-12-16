@@ -11,18 +11,6 @@ function gen_line(string $filename) : generator
     return;
 }
 
-function parse_file($filename) : array
-{   
-    $mat = array();
-    $generator = gen_line($filename);    
-    while ($generator->valid()) {
-        $line = $generator->current();
-        array_push($mat, str_split($line, 1));
-        $generator->next();
-    }
-    return $mat;
-}
-
 function print_arr($arr)
 {
     foreach($arr as $a){
