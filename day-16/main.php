@@ -90,7 +90,7 @@ class Map
         return;
     }
 
-    public function run(array $pos, Move $mv)
+    public function run(array $pos, Move $mv) : void
     {
         //print_mat($this->_rep);
         if($pos[0] < 0 || $pos[1] < 0 || $pos[0] > count($this->_mat) - 1 || $pos[1] > count($this->_mat[0]) - 1){
@@ -229,6 +229,17 @@ class Map
         return count(array_keys($this->_visited));
     }
 
+    public function get_tiles() : array
+    {
+        return $this->_mat;
+    }
+
+    public function reset() : void
+    {
+        $this->_visited = array();
+        return;
+    }
+
     protected $_mat;
     protected $_rep;
     protected $_visited;
@@ -238,8 +249,51 @@ function solve(string $filename) : int
 {
     $map = new Map();
     $map->from_file($filename);
-    $map->run(array(0,0), Move::Right, false);
+    $map->run(array(0,0), Move::Right);
     return $map->get_visited();
+}
+
+function solve2(string $filename) : int
+{
+    $max = 0;
+    $map = new Map();
+    $map->from_file($filename);
+    $tiles = $map->get_tiles();
+
+    // Top row (heading downward)
+    for($i = 0; $i < count($tiles[0]); $i++){
+        $map->reset();
+        $map->run(array(0, $i), Move::Down, false);
+        if($map->get_visited() > $max){
+            $max = $map->get_visited();
+        }
+    }        
+    // Bottom row (heading upward)
+    for($i = 0; $i < count($tiles[0]); $i++){
+        $map->reset();
+        $map->run(array(count($tiles), $i), Move::Up, false);
+        if($map->get_visited() > $max){
+            $max = $map->get_visited();
+        }
+    }
+    // Leftmost column (heading right)
+    for($i = 0; $i < count($tiles); $i++){
+        $map->reset();
+        $map->run(array($i, 0), Move::Right, false);
+        if($map->get_visited() > $max){
+            $max = $map->get_visited();
+        }
+    }  
+    // Rightmost column (heading left)
+    for($i = 0; $i < count($tiles); $i++){
+        $map->reset();
+        $map->run(array($i, count($tiles[0])), Move::Left, false);
+        if($map->get_visited() > $max){
+            $max = $map->get_visited();
+        }
+    }    
+    
+    return $max;
 }
 
 
@@ -255,6 +309,17 @@ function main(): void
     $res = solve("input.txt");
     $toc = microtime(true);
     printf("Answer 1: %d in %.3f ms.\n", $res, ($toc-$tic)*1e3);
+
+    /**** PART 2 ****/       
+    $res = solve2("sample.txt");
+    echo $res;
+    if (51 !== $res)
+        return;
+    printf("... sample passed!\n");
+    $tic = microtime(true);
+    $res = solve2("input.txt");
+    $toc = microtime(true);
+    printf("Answer 2: %d in %.3f ms.\n", $res, ($toc-$tic)*1e3);
 }
 main();
 
