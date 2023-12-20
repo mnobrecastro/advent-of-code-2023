@@ -19,7 +19,6 @@ function parse_file(string $filename, bool $is_hexa) : array
         [$cmd, $hash] = explode("(", $line);
         [$move, $steps] = explode(" ", $cmd);
         $hash = substr($hash, 1, -1);
-        //echo $move." ".$steps." ".$hash."\n";
         if($is_hexa) {
             // The last hexadecimal digit encodes the direction to dig:
             // 0 means R, 1 means D, 2 means L, and 3 means U.
@@ -39,7 +38,6 @@ function parse_file(string $filename, bool $is_hexa) : array
             }
             $steps = hexdec(substr($hash, 0, -1));
         }
-        //echo "* ".$move." ".$steps." ".$hash."\n";
         array_push($arr, array($move, $steps, $hash));
         $generator->next();
     }
@@ -84,7 +82,6 @@ class DirectedGraph
                     break;
             }
             $head = sprintf("%d,%d", $i, $j);
-            //echo $tail." -> ".$head."\n";
             $this->add_edge($tail, $head);
             $tail = $head;
         }
@@ -93,9 +90,6 @@ class DirectedGraph
 
     public function add_edge($tail, $head) : void
     {
-        // if(!in_array($tail, array_keys($this->_adj)))
-        //     $this->_adj[$tail] = array();
-        // array_push($this->_adj[$tail], $head);
         $this->_adj[$tail] = $head;
     }
     
@@ -103,7 +97,6 @@ class DirectedGraph
     {
         $sum = 0;
         foreach($this->_adj as $tail => $head) {
-            //echo "^".$tail." -> ".$head."\n";
             [$t_i, $t_j] = explode(",", $tail);
             $t_i = intval($t_i);
             $t_j = intval($t_j);
@@ -113,7 +106,6 @@ class DirectedGraph
             $sum += abs($t_i - $h_i) + abs($t_j - $h_j);
         }
         return $sum;
-        // return count($this->_adj);
     }
 
     public function flood_fill($vertex) : void
@@ -123,7 +115,6 @@ class DirectedGraph
         $j = intval($j);
 
         foreach($this->_adj as $tail => $head) {
-            //echo "*".$tail." -> ".$head."\n";
             [$t_i, $t_j] = explode(",", $tail);
             $t_i = intval($t_i);
             $t_j = intval($t_j);
@@ -187,8 +178,7 @@ class DirectedGraph
         $area = 0.0;
         $start = array(0.0, 0.0);
         $flag = true;
-        foreach($this->_adj as $tail => $head) {            
-            
+        foreach($this->_adj as $tail => $head) {
             [$t_i, $t_j] = explode(",", $tail);
             $t_i = floatval($t_i);
             $t_j = floatval($t_j);
@@ -200,9 +190,7 @@ class DirectedGraph
                 $flag = false;
                 continue;
             }
-
             $area += $this->_signed_area($start, array($t_i, $t_j), array($h_i, $h_j));
-            //echo "area: ".$area."\n";
         }
         return $area;
     }
@@ -224,11 +212,13 @@ function solve(string $filename, bool $is_hexa=false) : int
     $g = new DirectedGraph();
     $start = $g->from_file($filename, $is_hexa);
     $contour = $g->get_size();
+
     //$g->flood_fill("1,1");
     //$fill = $g->get_inside();
     $area = $g->get_area();    
-    $fill = $area + 1 - $contour/2; // Pick's theorem   
-    echo "contour: ".$contour." fill: ".$fill."\n";
+    $fill = $area + 1 - $contour/2; // Pick's theorem
+    
+    //echo "contour: ".$contour." fill: ".$fill."\n";
     return $contour + $fill;
 }
 
