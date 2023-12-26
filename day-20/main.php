@@ -20,15 +20,16 @@ class Queue
     public function from_file(string $filename) : void
     {
         [$this->_broadcaster, $this->_flipflop, $this->_conjunction] = $this->_parse_file($filename);
-        ////print_r($this->_flipflop);
-        ////print_r($this->_conjunction);
+        //print_r($this->_flipflop);
+        //print_r($this->_conjunction);
         return;
     }
 
-    public function run() : array
+    public function run(string $outmod="", $outstate=false) : array
     {
         // Reset queue
         $this->_q = array();
+        $flag = false;
 
         // Push button
         $pulse = false;
@@ -42,12 +43,19 @@ class Queue
                 // Flip-flop module                
                 if(!$pulse){
                     if($this->_flipflop[$module][0]){
-                        $this->_flipflop[$module][0] = false;
+                        $this->_flipflop[$module][0] = false;                        
                     } else {
                         $this->_flipflop[$module][0] = true;
                     }
                     array_push($subq, $module);
-                }
+
+                    // Check for "outmod" output module
+                    if(strlen($outmod) > 0){                            
+                        if($module == $outmod){
+                            $flag = true;
+                        }
+                    }
+                }                
             }
         }
         ////print_r($subq);
@@ -68,16 +76,28 @@ class Queue
                         foreach($this->_flipflop[$module][1] as $target){
                             array_push($this->_q, $pulse);
                             //echo $module." -> ".+$pulse." -> ".$target."\n";
+                            if(strlen($outmod) > 0) {                            
+                                if($target == $outmod && $pulse == $outstate){
+                                    $flag = true;
+                                }
+                            }
                             if(in_array($target, array_keys($this->_flipflop))) {
                                 // Flip-flop module
                                 if(!$pulse){                            
                                     if($this->_flipflop[$target][0]){
-                                        $this->_flipflop[$target][0] = false;
+                                        $this->_flipflop[$target][0] = false;                                        
                                     } else {
                                         $this->_flipflop[$target][0] = true;
                                     }
                                     array_push($subq2, $target);
-                                }
+
+                                    // // Check for "outmod" output module
+                                    // if(strlen($outmod) > 0){                            
+                                    //     if($target == $outmod){
+                                    //         $flag = true;
+                                    //     }
+                                    // }
+                                }                                
                             } else {
                                 // Conjunction module
                                 if(in_array($module, array_keys($this->_conjunction[$target]["inputs"]))){
@@ -88,13 +108,14 @@ class Queue
                         }
                     }
                 } else {
+                    // Conjunction module
                     $output = true;
                     foreach($this->_conjunction[$module]["inputs"] as $in => $rem){
                         //echo $in." ~ ".+$rem."\n";
                         if(!$rem){
                             $output = false;
                             break;
-                        }
+                        }                        
                     }
                     if($output){
                         $pulse = false;
@@ -104,16 +125,29 @@ class Queue
                     foreach($this->_conjunction[$module]["outputs"] as $out){
                         array_push($this->_q, $pulse);
                         //echo $module." -> ".+$pulse." -> ".$out."\n";
+                        if(strlen($outmod) > 0) {                            
+                            if($out == $outmod && $pulse == $outstate){
+                                $flag = true;
+                            }
+                        }
                         if(in_array($out, array_keys($this->_flipflop))){
-                            // Flip-flop module
+                            // Flip-flop module          
                             if(!$pulse){
                                 if($this->_flipflop[$out][0]){
                                     $this->_flipflop[$out][0] = false;
+                                    
                                 } else {
                                     $this->_flipflop[$out][0] = true;
                                 }
-                                array_push($subq2, $out);                          
-                            }
+                                array_push($subq2, $out);
+                                
+                                // // Check for "outmod" output module
+                                // if(strlen($outmod) > 0) {                            
+                                //     if($out == $outmod && !$pulse){
+                                //         $flag = true;
+                                //     }
+                                // }
+                            }                            
                         } else {
                             // Conjunction module                            
                             if(in_array($out, array_keys($this->_conjunction))) {
@@ -140,7 +174,11 @@ class Queue
         }
 
         $counts = array_count_values($q_out);
-        return [$counts[1], $counts[0]];
+        if(strlen($outmod) == 0){
+            return [$counts[1], $counts[0]];
+        }else {            
+            return [$counts[1], $counts[0], $flag];
+        }        
     }
 
     protected function _parse_file(string $filename) : array
@@ -162,9 +200,6 @@ class Queue
                     break;
                 case "&":
                     $outputs = explode(", ", $targets);
-                    // foreach($outputs as $out){
-                    //     $conjunction[substr($source, 1)]["outputs"][$out] = false;
-                    // }
                     $conjunction[substr($source, 1)]["outputs"] = $outputs;
                     break;
             }
@@ -176,7 +211,10 @@ class Queue
             foreach($targets as $target) {
                 if(in_array($target, array_keys($conjunction))){
                     $conjunction[$target]["inputs"][$source] = false;
-                }            
+                } else if(!in_array($target, array_keys($flipflop))) {
+                    // Output module
+                    $flipflop[$target] = array(false, array());
+                }
             }
         }
         foreach(array_keys($conjunction) as $source){
@@ -184,7 +222,10 @@ class Queue
             foreach($targets as $target) {
                 if(in_array($target, array_keys($conjunction))){
                     $conjunction[$target]["inputs"][$source] = false;
-                }            
+                } else if(!in_array($target, array_keys($flipflop))) {
+                    // Output module
+                    $flipflop[$target] = array(false, array());
+                } 
             }
         }
         return [$broadcaster, $flipflop, $conjunction];
@@ -203,17 +244,44 @@ function solve(string $filename, int $cycles) : int
     $sum_high = 0;
     $sum_low = 0;
     for($i = 0; $i < $cycles; $i++){
-        [$high, $low] = $q->run();
+        [$high, $low] = $q->run();      
         $sum_high += $high;
-        $sum_low += $low;
+        $sum_low += $low;        
     }
     return $sum_high * $sum_low;
 }
 
+function gcd($a, $b)
+{
+    if ($b == 0)
+        return $a;
+    return gcd($b, $a % $b);
+}
+
+function least_common_multiple(array $arr) : int
+{
+    $ans = $arr[0];
+    for ($i = 1; $i < count($arr); $i++)
+        $ans = ((($arr[$i] * $ans)) / (gcd($arr[$i], $ans)));
+    return $ans;
+}
+
+function solve2(string $filename, string $outmod="") : int
+{        
+    $q = new Queue();
+    $q->from_file($filename);
+    $flag = false;
+    $i = 0;
+    while(!$flag){
+        [$high, $low, $flag] = $q->run($outmod);
+        $i++;
+    }
+    return $i;
+}
 
 function main(): void
 {    
-    /**** PART 1 ****/~
+    /**** PART 1 ****/
     $res = solve("sample.txt", 1000);
     echo $res;
     if (32000000 !== $res)
@@ -228,6 +296,24 @@ function main(): void
     $res = solve("input.txt", 1000);
     $toc = microtime(true);
     printf("Answer 1: %d in %.3f ms.\n", $res, ($toc-$tic)*1e3);
+
+    /**** PART 2 ****/
+    $res = solve2("sample2.txt", $outmod="output", $outstate=false);
+    echo $res;
+    if (1 !== $res)
+        return;
+    printf("... sample passed!\n");
+    $tic = microtime(true);    
+    // $res = solve2("input.txt", $outmod="rx");
+    // vm, lm, jd, fv > zg > rx
+    $arr = array();
+    array_push($arr, solve2("input.txt", $outmod="vm", $outstate=true));
+    array_push($arr, solve2("input.txt", $outmod="lm", $outstate=true));
+    array_push($arr, solve2("input.txt", $outmod="jd", $outstate=true));
+    array_push($arr, solve2("input.txt", $outmod="fv", $outstate=true));
+    $res = least_common_multiple(array_unique($arr)); 
+    $toc = microtime(true);
+    printf("Answer 2: %d in %.3f ms.\n", $res, ($toc-$tic)*1e3);
 }
 main();
 
