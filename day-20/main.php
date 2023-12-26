@@ -20,8 +20,6 @@ class Queue
     public function from_file(string $filename) : void
     {
         [$this->_broadcaster, $this->_flipflop, $this->_conjunction] = $this->_parse_file($filename);
-        //print_r($this->_flipflop);
-        //print_r($this->_conjunction);
         return;
     }
 
@@ -47,18 +45,17 @@ class Queue
                     } else {
                         $this->_flipflop[$module][0] = true;
                     }
-                    array_push($subq, $module);
-
-                    // Check for "outmod" output module
-                    if(strlen($outmod) > 0){                            
-                        if($module == $outmod){
-                            $flag = true;
-                        }
-                    }
+                    array_push($subq, $module);                    
                 }                
             }
+            
+            // Check for output module (outmod) and state (outstate)
+            if(strlen($outmod) > 0){                            
+                if($module == $outmod && $pulse == $outstate){
+                    $flag = true;
+                }
+            }
         }
-        ////print_r($subq);
 
         $subq2 = array();
         while(true) {
@@ -75,12 +72,7 @@ class Queue
                     if(count($this->_flipflop[$module][1]) > 0) {
                         foreach($this->_flipflop[$module][1] as $target){
                             array_push($this->_q, $pulse);
-                            //echo $module." -> ".+$pulse." -> ".$target."\n";
-                            if(strlen($outmod) > 0) {                            
-                                if($target == $outmod && $pulse == $outstate){
-                                    $flag = true;
-                                }
-                            }
+                            //echo $module." -> ".+$pulse." -> ".$target."\n";                            
                             if(in_array($target, array_keys($this->_flipflop))) {
                                 // Flip-flop module
                                 if(!$pulse){                            
@@ -90,19 +82,19 @@ class Queue
                                         $this->_flipflop[$target][0] = true;
                                     }
                                     array_push($subq2, $target);
-
-                                    // // Check for "outmod" output module
-                                    // if(strlen($outmod) > 0){                            
-                                    //     if($target == $outmod){
-                                    //         $flag = true;
-                                    //     }
-                                    // }
                                 }                                
                             } else {
                                 // Conjunction module
                                 if(in_array($module, array_keys($this->_conjunction[$target]["inputs"]))){
                                     $this->_conjunction[$target]["inputs"][$module] = $pulse;
                                     array_push($subq2, $target);
+                                }
+                            }
+
+                            // Check for output module (outmod) and state (outstate)
+                            if(strlen($outmod) > 0) {                            
+                                if($target == $outmod && $pulse == $outstate){
+                                    $flag = true;
                                 }
                             }
                         }
@@ -125,11 +117,7 @@ class Queue
                     foreach($this->_conjunction[$module]["outputs"] as $out){
                         array_push($this->_q, $pulse);
                         //echo $module." -> ".+$pulse." -> ".$out."\n";
-                        if(strlen($outmod) > 0) {                            
-                            if($out == $outmod && $pulse == $outstate){
-                                $flag = true;
-                            }
-                        }
+                        
                         if(in_array($out, array_keys($this->_flipflop))){
                             // Flip-flop module          
                             if(!$pulse){
@@ -140,19 +128,19 @@ class Queue
                                     $this->_flipflop[$out][0] = true;
                                 }
                                 array_push($subq2, $out);
-                                
-                                // // Check for "outmod" output module
-                                // if(strlen($outmod) > 0) {                            
-                                //     if($out == $outmod && !$pulse){
-                                //         $flag = true;
-                                //     }
-                                // }
                             }                            
                         } else {
                             // Conjunction module                            
                             if(in_array($out, array_keys($this->_conjunction))) {
                                 $this->_conjunction[$out]["inputs"][$module] = $pulse;
                                 array_push($subq2, $out);
+                            }
+                        }
+
+                        // Check for output module (outmod) and state (outstate)
+                        if(strlen($outmod) > 0) {                            
+                            if($out == $outmod && $pulse == $outstate){
+                                $flag = true;
                             }
                         }
                     }
@@ -166,7 +154,6 @@ class Queue
                 $subq2 = array();
             }
         }
-        ////print_r($this->_q);
 
         $q_out = array();
         foreach($this->_q as $e){
